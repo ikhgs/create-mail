@@ -37,6 +37,9 @@ const MSG = {
     },
     server_error: function() {
         return 'server error. please try again';
+    },
+    provide: function() {
+        return 'please provide email';
     }
 };
 
@@ -101,6 +104,9 @@ app.get('/api/generate_email', async (req, res) => {
 
 app.get('/api/inbox', async (req, res) => {
     const em = req.query.email;
+    if (!em) {
+        return res.json({ status: false, error: MSG.provide() });
+    }
     try {
         const req = await axios.get(API+'/fetch_emails.php', { params: { email: em } });
         const dat = req.data;
@@ -128,6 +134,9 @@ app.get('/api/inbox', async (req, res) => {
 
 app.get('/api/delete_email', async (req, res) => {
     const em = req.query.email;
+    if (!em) {
+        return res.json({ status: false, error: MSG.provide() });
+    }
     try {
         const req = await axios.get(API+'/delete_email.php', { params: { email: em } });
         const dat = req.data;
