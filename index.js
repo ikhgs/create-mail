@@ -178,9 +178,8 @@ app.get('/api/create_email', async (req, res) => {
         return res.json({ status: false, error: MSG.provide() });
     }
     try {
-        const req = await axios.get(API+'/check_email.php', { params: { email: em } });
+        const req = await axios.post(API+'/check_email.php', {'email':em}, { headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
         const dat = req.data;
-
         if (dat.status) {
             res.json({
                 status: true,
