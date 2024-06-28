@@ -15,7 +15,7 @@ const app = express();
       BY : FB.COM/IAMKIRYU | GITHUB.COM/KIRYUDEV
       BY : FB.COM/IAMKIRYU | GITHUB.COM/KIRYUDEV
      
-     
+      - updated 6/28/24 (fixed error handling & added create_email (custom name))
 */
 
 const API = 'https://t-mail.tech';
@@ -33,13 +33,16 @@ const MSG = {
         return 'could not generate email';
     },
     inbox_error: function() {
-        return 'could not retrieve messages';
+        return 'could not retrieve inbox. domain may be invalid';
     },
     server_error: function() {
         return 'server error. please try again';
     },
     provide: function() {
         return 'please provide email';
+    },
+    create_error: function() {
+        return 'could not create email. domain may be invalid';
     }
 };
 
@@ -122,11 +125,18 @@ app.get('/api/inbox', async (req, res) => {
                 error: MSG.inbox_error()
             });
         }
-    } catch {
-        res.json({
-            status: false,
-            error: MSG.server_error()
-        });
+    } catch (e) {
+        if (!e.response.data.status) {
+            res.json({
+                status: false,
+                error: MSG.inbox_error()
+            });
+        } else {
+            res.json({
+                status: false,
+                error: MSG.server_error()
+            });
+        }
     }
 });
 
@@ -157,6 +167,43 @@ app.get('/api/delete_email', async (req, res) => {
             status: false,
             error: MSG.server_error()
         });
+    }
+});
+
+/* create email */
+
+app.get('/api/create_email', async (req, res) => {
+    const em = req.query.email;
+    if (!em) {
+        return res.json({ status: false, error: MSG.provide() });
+    }
+    try {
+        const req = await axios.get(API+'/check_email.php', { params: { email: em } });
+        const dat = req.data;
+
+        if (dat.status) {
+            res.json({
+                status: true,
+                email: em
+            });
+        } else {
+            res.json({
+                status: false,
+                error: MSG.create_error()
+            });
+        }
+    } catch (e) {
+        if (!e.response.data.status) {
+            res.json({
+                status: false,
+                error: MSG.create_error()
+            });
+        } else {
+            res.json({
+                status: false,
+                error: MSG.server_error()
+            });
+        }
     }
 });
 
